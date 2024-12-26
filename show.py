@@ -12,6 +12,8 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
+
+#Dataset preprocessing
 train,metar = arff.loadarff("ECG5000_TRAIN.arff")
 df_train = pd.DataFrame(train)
 df_train['target'] = df_train['target'].astype(int)
@@ -27,7 +29,17 @@ x_test = df_test.iloc[:,:-1]
 X = pd.concat([x_train,x_test],axis=0)
 y = pd.concat([y_train,y_test],axis=0)
 
-counter = Counter(y_test)
+random_seed = 23
+X = X.sample(frac=1,random_state=random_seed).reset_index(drop=True)
+y = y.sample(frac=1,random_state=random_seed).reset_index(drop=True)
+
+x_train = X.iloc[:3500,:]
+x_test = X.iloc[3500:,:]
+y_train = y.iloc[:3500]
+y_test = y.iloc[3500:]
+
+#the num of each class
+counter = Counter(y_train)
 labels = list(counter.keys())
 frequencies = list(counter.values())
 plt.figure()
@@ -37,6 +49,7 @@ plt.xlabel('Class')
 plt.ylabel('Frequency')
 plt.show()
 
-'''plt.figure()
+#show the shape of data
+plt.figure()
 plt.plot(range(140),X.iloc[412])
-plt.show()'''
+plt.show()

@@ -3,11 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.mixture import GaussianMixture
-from sklearn.model_selection import cross_val_score
 from scipy.io import arff
-from sklearn.metrics import recall_score, accuracy_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import make_scorer,silhouette_score
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
@@ -17,6 +14,7 @@ from sklearn.metrics import silhouette_score,silhouette_samples
 from matplotlib.pyplot import nipy_spectral
 
 
+#Dataset preprocessing
 train,metar = arff.loadarff("ECG5000_TRAIN.arff")
 df_train = pd.DataFrame(train)
 df_train['target'] = df_train['target'].astype(int)
@@ -41,57 +39,73 @@ x_test = X.iloc[3500:,:]
 y_train = y.iloc[:3500]
 y_test = y.iloc[3500:]
 
+
+#classifier
 gmm = GaussianMixture(n_components=5)
-gmm.fit(x_train)
-y_pred_train = gmm.predict(X) + 1
-
-def map_label(y_train,y_pred_train,n_classes):
-    label_map = {}
-    c = Counter(y_train)
-    ct = Counter(y_pred_train)
-    c = list(c.items())
-    c.sort(key=lambda x:x[1])
-    ct = list(ct.items())
-    ct.sort(key=lambda x:x[1])
-    for i in range(n_classes):
-        label_map[ct[i][0]] =c[i][0]
-
-    return label_map
-
-#acc
-'''label_map = map_label(y_train,y_pred_train,5)
-y_pred_test = gmm.predict(x_test) + 1
-for i in range(1500):
-    y_pred_test[i] = label_map[y_pred_test[i]]
-
-report = classification_report(y_test,y_pred_test)
-print(report)'''
-
+gmm.fit(X)
+y_pred_train = gmm.predict(x_train) + 1
 y_pred = gmm.predict(X) + 1
 
-#acc_report
-'''label_map = map_label(y,y_pred,5)
-for i in range(5000):
-    y_pred[i] = label_map[y_pred[i]]
-
-report = classification_report(y,y_pred)
-print(report)
-
-#confusion matrix
-cm = confusion_matrix(y,y_pred)
-np.fill_diagonal(cm,0)
-plt.figure()
-sns.heatmap(cm,annot=True,fmt='d',cmap='Reds',xticklabels=['1','2','3','4','5'],
-            yticklabels=['1','2','3','4','5'])
-plt.title('Confusion Matrix')
-plt.xlabel('Predicted Label')
-plt.ylabel('True Label')
-plt.show()'''
+# #acc
+# def map_label(y_train,y_pred_train,n_classes):
+#     label_map = {}
+#     c = Counter(y_train)
+#     ct = Counter(y_pred_train)
+#     c = list(c.items())
+#     c.sort(key=lambda x:x[1])
+#     ct = list(ct.items())
+#     ct.sort(key=lambda x:x[1])
+#     for i in range(n_classes):
+#         label_map[ct[i][0]] =c[i][0]
+#
+#     return label_map
+#
+# label_map = map_label(y_train,y_pred_train,5)
+# y_pred_test = gmm.predict(x_test) + 1
+# for i in range(1500):
+#     y_pred_test[i] = label_map[y_pred_test[i]]
+#
+# report = classification_report(y_test,y_pred_test)
+# print(report)
+#
+# y_pred = gmm.predict(X) + 1
+#
+# #confusion matrix
+# cm = confusion_matrix(y,y_pred)
+# np.fill_diagonal(cm,0)
+# plt.figure()
+# sns.heatmap(cm,annot=True,fmt='d',cmap='Reds',xticklabels=['1','2','3','4','5'],
+#             yticklabels=['1','2','3','4','5'])
+# plt.title('Confusion Matrix')
+# plt.xlabel('Predicted Label')
+# plt.ylabel('True Label')
+# plt.show()
+#
+# kf = KFold(n_splits=10,shuffle=True)
+# gmm = GaussianMixture(n_components=5)
+#
+# r_acc = []
+# for i in range(1,11):
+#     acc = []
+#     for train_index,test_index in kf.split(X):
+#         X_train,X_test = X.iloc[train_index,:],X.iloc[test_index,:]
+#         y_train,y_test = y.iloc[train_index],y.iloc[test_index]
+#         gmm.fit(X_train)
+#         y_pred_train = gmm.predict(X_train)
+#         label_map = map_label(y_train,y_pred_train,5)
+#         y_pred = gmm.predict(X_test)
+#         for i in range(len(y_pred)):
+#             y_pred[i] = label_map[y_pred[i]]
+#         acc.append(accuracy_score(y_test,y_pred))
+#     r_acc.append(sum(acc)/len(acc))
+#
+# plt.figure()
+# plt.plot(range(1,11),r_acc)
+# plt.show()
 
 #silhouette
 silhouette_avg = silhouette_score(X, y_pred)
 print(f"轮廓系数：{silhouette_avg}")
-
 silhouette_vals = silhouette_samples(X, y_pred)
 
 # image of silhouette
@@ -111,32 +125,10 @@ for i in range(1,6):
     y_lower = y_upper + 10
 
 plt.axvline(x=silhouette_avg, color="red", linestyle="--")
-
 plt.yticks([])
 plt.xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
 plt.show()
 
 
-'''kf = KFold(n_splits=10,shuffle=True)
-gmm = GaussianMixture(n_components=5)
-
-r_acc = []
-for i in range(1,11):
-    acc = []
-    for train_index,test_index in kf.split(X):
-        X_train,X_test = X.iloc[train_index,:],X.iloc[test_index,:]
-        y_train,y_test = y.iloc[train_index],y.iloc[test_index]
-        gmm.fit(X_train)
-        y_pred_train = gmm.predict(X_train)
-        label_map = map_label(y_train,y_pred_train,5)
-        y_pred = gmm.predict(X_test)
-        for i in range(len(y_pred)):
-            y_pred[i] = label_map[y_pred[i]]
-        acc.append(accuracy_score(y_test,y_pred))
-    r_acc.append(sum(acc)/len(acc))
-
-plt.figure()
-plt.plot(range(1,11),r_acc)
-plt.show()'''
 
 

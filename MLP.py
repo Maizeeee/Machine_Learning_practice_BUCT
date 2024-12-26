@@ -12,6 +12,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
+#Dataset preprocessing
 train,metar = arff.loadarff("ECG5000_TRAIN.arff")
 df_train = pd.DataFrame(train)
 df_train['target'] = df_train['target'].astype(int)
@@ -27,23 +28,25 @@ x_test = df_test.iloc[:,:-1]
 X = pd.concat([x_train,x_test],axis=0)
 y = pd.concat([y_train,y_test],axis=0)
 
-'''Srandom_seed = 23
+random_seed = 23
 X = X.sample(frac=1,random_state=random_seed).reset_index(drop=True)
 y = y.sample(frac=1,random_state=random_seed).reset_index(drop=True)
 
 x_train = X.iloc[:3500,:]
 x_test = X.iloc[3500:,:]
 y_train = y.iloc[:3500]
-y_test = y.iloc[3500:]'''
+y_test = y.iloc[3500:]
 
-mlp = MLPClassifier(hidden_layer_sizes=(128,),activation='relu',solver='adam',
-                    max_iter=1000)
+#classifier
+mlp = MLPClassifier()
 mlp.fit(x_train,y_train)
 y_pred = mlp.predict(x_test)
 
 report = classification_report(y_test,y_pred,zero_division=0)
 print(report)
 
+
+#Using heatmap to describe Confusion Matrix
 cm = confusion_matrix(y_test,y_pred)
 np.fill_diagonal(cm,0)
 plt.figure()
@@ -54,11 +57,12 @@ plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
 plt.show()
 
+
+#cross_val_score
 r_scores_acc= []
 
 for i in range(10):
-    mlp = MLPClassifier(hidden_layer_sizes=(128,),activation='relu',solver='adam',
-                    max_iter=1000)
+    mlp = MLPClassifier()
     r_scores_acc.append(cross_val_score(mlp,X,y,cv=10).mean())
 
 plt.figure()

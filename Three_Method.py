@@ -15,6 +15,8 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 
+
+#Dataset preprocessing
 train,metar = arff.loadarff("ECG5000_TRAIN.arff")
 df_train = pd.DataFrame(train)
 df_train['target'] = df_train['target'].astype(int)
@@ -34,6 +36,7 @@ random_seed = 23
 X = X.sample(frac=1,random_state=random_seed).reset_index(drop=True)
 y = y.sample(frac=1,random_state=random_seed).reset_index(drop=True)
 
+#comparison
 scaler = StandardScaler()
 X = scaler.fit_transform(X)
 
